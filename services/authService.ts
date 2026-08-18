@@ -1,5 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 
 export async function signUp(_: unknown, formData: FormData) {
@@ -8,6 +9,13 @@ export async function signUp(_: unknown, formData: FormData) {
   const confirm = String(formData.get("confirm") ?? "");
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
   if (password !== confirm) return { error: "Passwords don't match." };
+  console.error("[DEBUG cookies]", JSON.stringify(cookies().getAll().map(c => ({ name: c.name, len: c.value.length, preview: c.value.slice(0, 40) })), null, 2));
+  console.error("[DEBUG env]", JSON.stringify({
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    supabaseUrlLen: process.env.NEXT_PUBLIC_SUPABASE_URL?.length,
+    anonKeyLen: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.length,
+    anonKeyPreview: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.slice(0, 20),
+  }));
   const supabase = createClient();
   const { error } = await supabase.auth.signUp({ email, password,
     options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback` } });
