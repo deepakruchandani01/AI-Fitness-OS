@@ -11,7 +11,10 @@ export async function signUp(_: unknown, formData: FormData) {
   const supabase = createClient();
   const { error } = await supabase.auth.signUp({ email, password,
     options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback` } });
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("[DEBUG signUp]", JSON.stringify({ name: error.name, message: error.message, status: (error as any).status, cause: (error as any).cause ? String((error as any).cause) : null, stack: error.stack }, null, 2));
+    return { error: error.message };
+  }
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return { message: "Check your email to confirm your account, then sign in." };
   redirect("/onboarding");
